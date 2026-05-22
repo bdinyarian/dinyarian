@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bahram Dinyarian | DFIR Director</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #090c10;
+      --surface: #0d1117;
+      --surface2: #161b22;
+      --border: #21262d;
+      --accent: #00d4aa;
+      --accent2: #0080ff;
+      --accent3: #ff6b35;
+      --text: #e6edf3;
+      --muted: #7d8590;
+      --mono: 'Share Tech Mono', monospace;
+      --display: 'Syne', sans-serif;
+      --body: 'DM Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 16px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: .4;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 4rem;
+      background: rgba(9,12,16,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,212,170,0.1);
+      transition: padding .3s;
+    }
+    nav.scrolled { padding: .8rem 4rem; }
+
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: .85rem;
+      color: var(--accent);
+      letter-spacing: .05em;
+    }
+    .nav-logo span { color: var(--muted); }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: .75rem;
+      text-decoration: none;
+      color: var(--muted);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      transition: color .2s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--accent);
+      transition: width .3s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-links a:hover::after { width: 100%; }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px; height: 2px;
+      background: var(--accent);
+      transition: .3s;
+    }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 6rem 4rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,212,170,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,170,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      animation: gridFade 4s ease-in-out infinite alternate;
+    }
+    @keyframes gridFade { from { opacity: .5; } to { opacity: 1; } }
+
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,212,170,0.08) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .hero-content { position: relative; z-index: 1; }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      font-family: var(--mono);
+      font-size: .72rem;
+      color: var(--accent);
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .hero-tag::before {
+      content: '';
+      width: 20px; height: 1px;
+      background: var(--accent);
+    }
+
+    .hero-name {
+      font-family: var(--display);
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      margin-bottom: .15rem;
+      background: linear-gradient(135deg, var(--text) 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-nickname {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: .8rem;
+      font-family: var(--mono);
+      font-size: .72rem;
+      color: var(--muted);
+      letter-spacing: .06em;
+    }
+    .hero-nickname .nick {
+      color: var(--accent3);
+      letter-spacing: .04em;
+    }
+    .hero-nickname::before {
+      content: "//";
+      color: var(--border);
+    }
+
+    .hero-title {
+      font-family: var(--mono);
+      font-size: 1rem;
+      color: var(--accent2);
+      margin-bottom: 1.5rem;
+      letter-spacing: .05em;
+    }
+
+    .hero-desc {
+      font-size: .95rem;
+      color: var(--muted);
+      max-width: 480px;
+      margin-bottom: 2.5rem;
+      line-height: 1.8;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .75rem 1.75rem;
+      font-family: var(--mono);
+      font-size: .78rem;
+      letter-spacing: .1em;
+      text-decoration: none;
+      text-transform: uppercase;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all .25s;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 700;
+    }
+    .btn-primary:hover {
+      background: #00ffcc;
+      box-shadow: 0 0 30px rgba(0,212,170,0.4);
+      transform: translateY(-2px);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid rgba(0,212,170,0.4);
+    }
+    .btn-outline:hover {
+      border-color: var(--accent);
+      background: rgba(0,212,170,0.08);
+      transform: translateY(-2px);
+    }
+
+    .hero-visual {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .profile-ring {
+      position: relative;
+      width: 320px; height: 320px;
+    }
+    .profile-ring::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent), var(--accent2), var(--accent3), var(--accent));
+      animation: spin 6s linear infinite;
+      z-index: 0;
+    }
+    .profile-ring::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border-radius: 50%;
+      background: var(--bg);
+      z-index: 1;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .profile-img {
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      object-fit: cover;
+      z-index: 2;
+      filter: grayscale(20%);
+    }
+
+    .stat-badges {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0; left: 0;
+    }
+    .stat-badge {
+      position: absolute;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .5rem .9rem;
+      font-family: var(--mono);
+      font-size: .7rem;
+      white-space: nowrap;
+      z-index: 3;
+    }
+    .stat-badge strong {
+      display: block;
+      font-size: 1.1rem;
+      color: var(--accent);
+      font-family: var(--display);
+    }
+    .stat-badge:nth-child(1) { top: 10%; right: -20%; }
+    .stat-badge:nth-child(2) { bottom: 15%; right: -15%; }
+    .stat-badge:nth-child(3) { bottom: 10%; left: -15%; }
+
+    /* ── SECTIONS ── */
+    section { padding: 6rem 4rem; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 4rem;
+    }
+    .section-label {
+      font-family: var(--mono);
+      font-size: .7rem;
+      color: var(--accent);
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+    .section-title {
+      font-family: var(--display);
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    /* ── ABOUT ── */
+    #about { background: var(--surface); }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: start;
+    }
+
+    .about-text p {
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+      font-size: .95rem;
+    }
+
+    .contact-info {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+    }
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      font-family: var(--mono);
+      font-size: .78rem;
+      color: var(--muted);
+    }
+    .contact-item .icon {
+      width: 32px; height: 32px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: .85rem;
+      flex-shrink: 0;
+    }
+    .contact-item a { color: var(--text); text-decoration: none; }
+    .contact-item a:hover { color: var(--accent); }
+
+    .skills-cloud { display: flex; flex-wrap: wrap; gap: .6rem; }
+    .skill-tag {
+      padding: .4rem .9rem;
+      background: rgba(0,212,170,0.06);
+      border: 1px solid rgba(0,212,170,0.2);
+      border-radius: 2px;
+      font-family: var(--mono);
+      font-size: .72rem;
+      color: var(--accent);
+      letter-spacing: .05em;
+      transition: all .2s;
+    }
+    .skill-tag:hover {
+      background: rgba(0,212,170,0.15);
+      border-color: var(--accent);
+    }
+
+    .skills-section-title {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+    .skills-section-title + .skills-cloud { margin-bottom: 2rem; }
+
+    /* ── EXPERIENCE ── */
+    #experience { background: var(--bg); }
+
+    .timeline { position: relative; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 200px;
+      top: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(180deg, var(--accent), transparent);
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 0 3rem;
+      margin-bottom: 3.5rem;
+      position: relative;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all .6s ease;
+    }
+    .timeline-item.visible { opacity: 1; transform: translateY(0); }
+
+    .timeline-meta {
+      text-align: right;
+      padding-right: 2rem;
+      padding-top: .25rem;
+    }
+    .timeline-date {
+      font-family: var(--mono);
+      font-size: .7rem;
+      color: var(--accent);
+      letter-spacing: .05em;
+      display: block;
+      margin-bottom: .3rem;
+    }
+    .timeline-company {
+      font-size: .8rem;
+      color: var(--muted);
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: 196px;
+      top: .35rem;
+      width: 9px; height: 9px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--accent);
+      z-index: 1;
+    }
+
+    .timeline-body { padding-left: 1rem; }
+
+    .timeline-role {
+      font-family: var(--display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: .6rem;
+      color: var(--text);
+    }
+
+    .timeline-body ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+    .timeline-body ul li {
+      font-size: .88rem;
+      color: var(--muted);
+      padding-left: 1rem;
+      position: relative;
+    }
+    .timeline-body ul li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: .7rem;
+      top: .1rem;
+    }
+
+    /* ── EDUCATION ── */
+    #education { background: var(--surface); }
+
+    .edu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .edu-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform .3s, border-color .3s;
+    }
+    .edu-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+    .edu-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0,212,170,0.3);
+    }
+    .edu-degree {
+      font-family: var(--mono);
+      font-size: .7rem;
+      color: var(--accent);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: .15rem;
+    }
+    .edu-title {
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: .4rem;
+    }
+    .edu-school { color: var(--muted); font-size: .88rem; }
+    .edu-year {
+      margin-top: 1rem;
+      font-family: var(--mono);
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--bg); }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 5rem;
+      align-items: start;
+    }
+
+    .contact-left p {
+      color: var(--muted);
+      font-size: .95rem;
+      margin-bottom: 2rem;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .social-link {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      text-decoration: none;
+      font-family: var(--mono);
+      font-size: .72rem;
+      color: var(--muted);
+      transition: all .2s;
+    }
+    .social-link:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── FORM ── */
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .form-group { display: flex; flex-direction: column; gap: .4rem; }
+
+    .form-group label {
+      font-family: var(--mono);
+      font-size: .7rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: .75rem 1rem;
+      font-family: var(--body);
+      font-size: .9rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      resize: none;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,212,170,0.1);
+    }
+    .form-group select { cursor: pointer; }
+    .form-group select option { background: var(--surface2); }
+    .form-group textarea { min-height: 140px; }
+
+    .form-status {
+      font-family: var(--mono);
+      font-size: .78rem;
+      display: none;
+      align-items: center;
+      gap: .5rem;
+      padding: .5rem .9rem;
+      border-radius: 4px;
+    }
+    .form-status.success {
+      display: inline-flex;
+      background: rgba(0,212,170,0.12);
+      border: 1px solid rgba(0,212,170,0.35);
+      color: var(--accent);
+    }
+    .form-status.error {
+      display: inline-flex;
+      background: rgba(255,107,53,0.12);
+      border: 1px solid rgba(255,107,53,0.35);
+      color: var(--accent3);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 2rem 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: .72rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── TERMINAL BLOCK ── */
+    .terminal {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 2rem;
+    }
+    .terminal-bar {
+      background: var(--surface2);
+      padding: .6rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .terminal-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .td-red { background: #ff5f57; }
+    .td-yellow { background: #febc2e; }
+    .td-green { background: #28c840; }
+    .terminal-title {
+      font-family: var(--mono);
+      font-size: .7rem;
+      color: var(--muted);
+      margin-left: .5rem;
+    }
+    .terminal-body {
+      padding: 1.2rem 1.5rem;
+      font-family: var(--mono);
+      font-size: .8rem;
+      line-height: 1.9;
+    }
+    .t-prompt { color: var(--accent); }
+    .t-cmd { color: var(--text); }
+    .t-out { color: var(--muted); }
+    .t-val { color: var(--accent2); }
+    .t-cursor {
+      display: inline-block;
+      width: 8px; height: 14px;
+      background: var(--accent);
+      vertical-align: middle;
+      animation: blink .8s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      nav.scrolled { padding: .8rem 1.5rem; }
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: var(--bg);
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        font-size: 1rem;
+        z-index: 99;
+      }
+      .hamburger { display: flex; z-index: 100; }
+      section { padding: 4rem 1.5rem; }
+      #hero { grid-template-columns: 1fr; padding: 8rem 1.5rem 4rem; text-align: center; }
+      .hero-desc { margin: 0 auto 2rem; }
+      .hero-ctas { justify-content: center; }
+      .hero-visual { margin-top: 3rem; }
+      .stat-badge:nth-child(1) { right: -5%; }
+      .stat-badge:nth-child(2) { right: -5%; }
+      .stat-badge:nth-child(3) { left: -5%; }
+      .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .timeline::before { left: 0; }
+      .timeline-item { grid-template-columns: 1fr; }
+      .timeline-meta { text-align: left; padding-right: 0; padding-left: 1.5rem; }
+      .timeline-dot { left: -4px; }
+      .timeline-body { padding-left: 1.5rem; }
+      .contact-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .form-row { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: .5rem; text-align: center; }
+    }
+
+    /* ── FADE IN ── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .fade-in.visible { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav id="navbar">
+  <div class="nav-logo"><span>~/</span>bdinyarian</div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#hero" onclick="closeNav()">Home</a></li>
+    <li><a href="#about" onclick="closeNav()">About</a></li>
+    <li><a href="#experience" onclick="closeNav()">Experience</a></li>
+    <li><a href="#education" onclick="closeNav()">Education</a></li>
+    <li><a href="#contact" onclick="closeNav()">Contact</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ── HERO ── -->
+<section id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-content">
+    <div class="hero-tag">DFIR · Cybersecurity · Incident Response</div>
+    <h1 class="hero-name">Bahram<br>Dinyarian</h1>
+    <div class="hero-nickname">also known as <span class="nick">Brian</span></div>
+    <p class="hero-title">// DFIR Director &amp; Senior Lead Technologist</p>
+    <p class="hero-desc">
+      Highly skilled incident response leader with expertise in managing ransomware infections 
+      at enterprise scale. 6+ years leading IR operations at Booz Allen Hamilton, driving 
+      automation and continuous improvement across global MDR platforms.
+    </p>
+    <div class="hero-ctas">
+      <a href="#contact" class="btn btn-primary">↗ Get in Touch</a>
+      <a href="#experience" class="btn btn-outline">View Experience</a>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="profile-ring">
+      <img 
+        src="https://media.licdn.com/dms/image/v2/D5603AQG6HfkGa2yqcQ/profile-displayphoto-scale_400_400/B56Z5NQGVgIYAg-/0/1779412529170?e=1781136000&v=beta&t=IA_pUV6oOpO9wPrAAEumkJ2-Vcg3MnyvR19reoArCG0" 
+        alt="Bahram Dinyarian"
+        class="profile-img"
+        onerror="this.style.display='none'"
+      />
+      <div class="stat-badges">
+        <div class="stat-badge">
+          <strong>6+</strong> Years @ B.A.H.
+        </div>
+        <div class="stat-badge">
+          <strong>1000s</strong> IR Cases
+        </div>
+        <div class="stat-badge">
+          <strong>DFIR/TDR</strong> Director
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ABOUT ── -->
+<section id="about">
+  <div class="section-header fade-in">
+    <div>
+      <div class="section-label">01 / About</div>
+      <h2 class="section-title">Who I Am</h2>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-text fade-in">
+      <p>
+        I'm a Digital Forensics &amp; Incident Response (DFIR) Director at Booz Allen Hamilton, 
+        where I lead advanced live incident response operations for complex cybersecurity intrusions 
+        across global enterprises.
+      </p>
+      <p>
+        With a career spanning roles from Consultant to Senior Lead Technologist, I've developed 
+        a deep specialization in ransomware, business email compromise (BEC), threat hunting, 
+        and MDR platform engineering. I thrive in fast-paced environments where accurate 
+        data interpretation directly impacts business outcomes.
+      </p>
+      <p>
+        Beyond the technical work, I'm passionate about mentoring — developing the next generation 
+        of security analysts through structured programs, coaching, and hands-on forensic training.
+      </p>
+
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="icon">📍</div>
+          <span>Singapore</span>
+        </div>
+        <div class="contact-item">
+          <div class="icon">✉️</div>
+          <a href="mailto:bahramdinyarian@gmail.com">bahramdinyarian@gmail.com</a>
+        </div>
+        <div class="contact-item">
+          <div class="icon">🔗</div>
+          <a href="https://linkedin.com/in/dinyarian" target="_blank">linkedin.com/in/dinyarian</a>
+        </div>
+        <div class="contact-item">
+          <div class="icon">🐙</div>
+          <a href="https://github.com/bdinyarian" target="_blank">github.com/bdinyarian</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="fade-in">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot td-red"></div>
+          <div class="terminal-dot td-yellow"></div>
+          <div class="terminal-dot td-green"></div>
+          <span class="terminal-title">bahram@dfir:~$</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="t-prompt">$</span> <span class="t-cmd">whoami --verbose</span></div>
+          <div class="t-out">Name:       <span class="t-val">Bahram Dinyarian</span></div>
+          <div class="t-out">Name:       <span class="t-val">Bahram Dinyarian <span style="color:var(--accent3);font-size:.85em;">(Brian)</span></span></div>
+          <div class="t-out">Role:       <span class="t-val">DFIR Director / Senior Lead Technologist</span></div>
+          <div class="t-out">Employer:   <span class="t-val">Booz Allen Hamilton</span></div>
+          <div class="t-out">Location:   <span class="t-val">Singapore</span></div>
+          <div class="t-out">Clearance:  <span class="t-val">[Redacted]</span></div>
+          <br>
+          <div><span class="t-prompt">$</span> <span class="t-cmd">cat specializations.txt</span></div>
+          <div class="t-out">→ <span class="t-val">Ransomware Incident Response</span></div>
+          <div class="t-out">→ <span class="t-val">Business Email Compromise (BEC)</span></div>
+          <div class="t-out">→ <span class="t-val">Threat Hunting &amp; Detection Engineering</span></div>
+          <div class="t-out">→ <span class="t-val">MDR Platform Development</span></div>
+          <div class="t-out">→ <span class="t-val">Digital Forensics &amp; DFIR</span></div>
+          <div class="t-out">→ <span class="t-val">Security Automation &amp; Tooling</span></div>
+          <br>
+          <div><span class="t-prompt">$</span> <span class="t-cursor"></span></div>
+        </div>
+      </div>
+
+      <br>
+      <p class="skills-section-title">Core Skills</p>
+      <div class="skills-cloud">
+        <span class="skill-tag">Incident Response</span>
+        <span class="skill-tag">Digital Forensics</span>
+        <span class="skill-tag">Threat Hunting</span>
+        <span class="skill-tag">Ransomware Analysis</span>
+        <span class="skill-tag">MDR Platforms</span>
+        <span class="skill-tag">BEC Investigations</span>
+        <span class="skill-tag">API Integrations</span>
+        <span class="skill-tag">Detection Engineering</span>
+        <span class="skill-tag">Malware Analysis</span>
+        <span class="skill-tag">Deep Packet Inspection</span>
+        <span class="skill-tag">Log Correlation</span>
+        <span class="skill-tag">Forensic Imaging</span>
+        <span class="skill-tag">Telemetry Analysis</span>
+        <span class="skill-tag">Python / PowerShell</span>
+        <span class="skill-tag">SIEM / SOAR</span>
+        <span class="skill-tag">Mentorship &amp; Training</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── EXPERIENCE ── -->
+<section id="experience">
+  <div class="section-header fade-in">
+    <div>
+      <div class="section-label">02 / Experience</div>
+      <h2 class="section-title">Career Timeline</h2>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="timeline">
+
+    <div class="timeline-item">
+      <div class="timeline-meta">
+        <span class="timeline-date">Jan 2025 — Present</span>
+        <span class="timeline-company">Booz Allen Hamilton</span>
+      </div>
+      <div class="timeline-dot"></div>
+      <div class="timeline-body">
+        <div class="timeline-role">Senior Lead Technologist — DFIR Director</div>
+        <ul>
+          <li>Lead advanced live incident response operations for complex cybersecurity intrusions across global enterprises.</li>
+          <li>Mentor and train junior and senior security analysts in threat hunting methodologies and forensic investigations.</li>
+          <li>Spearhead automation and tooling enhancements across Booz Allen's MDR platform to increase analyst efficiency.</li>
+          <li>Collaborate with engineering and leadership teams to refine strategic response workflows.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-meta">
+        <span class="timeline-date">Jan 2024 — Jan 2025</span>
+        <span class="timeline-company">Booz Allen Hamilton</span>
+      </div>
+      <div class="timeline-dot"></div>
+      <div class="timeline-body">
+        <div class="timeline-role">Lead Technologist — Associate</div>
+        <ul>
+          <li>Oversaw tactical live incident responses, ensuring rapid containment and eradication of active threats.</li>
+          <li>Provided structured mentorship programs for developing analyst threat hunting capabilities.</li>
+          <li>Enhanced forensic capabilities by deploying new collection and investigation toolsets.</li>
+          <li>Supported large-scale client environments and contributed to post-incident reports and remediation planning.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-meta">
+        <span class="timeline-date">Jan 2022 — Jan 2023</span>
+        <span class="timeline-company">Tracepoint</span>
+      </div>
+      <div class="timeline-dot"></div>
+      <div class="timeline-body">
+        <div class="timeline-role">Managing Consultant</div>
+        <ul>
+          <li>Directed IR teams handling threat detection and response across enterprise networks.</li>
+          <li>Delivered threat hunting workshops and documentation for internal and external cybersecurity teams.</li>
+          <li>Integrated custom rulesets into MDR solutions to optimize threat detection.</li>
+          <li>Contributed to operational metrics and dashboards for executive-level reporting.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-meta">
+        <span class="timeline-date">Jan 2021 — Jan 2022</span>
+        <span class="timeline-company">Tracepoint</span>
+      </div>
+      <div class="timeline-dot"></div>
+      <div class="timeline-body">
+        <div class="timeline-role">Senior Consultant</div>
+        <ul>
+          <li>Led MDR platform development, including API integrations and alert triage logic.</li>
+          <li>Created foundational detection rule libraries for scalable threat intelligence ingestion.</li>
+          <li>Streamlined response procedures for the global IR team to ensure SLA alignment.</li>
+          <li>Supported hundreds of IR investigations with deep packet inspection and telemetry data hunting.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-meta">
+        <span class="timeline-date">Jan 2020 — Jan 2021</span>
+        <span class="timeline-company">Tracepoint</span>
+      </div>
+      <div class="timeline-dot"></div>
+      <div class="timeline-body">
+        <div class="timeline-role">Consultant</div>
+        <ul>
+          <li>Developed internal forensics tools used in BEC and ransomware investigations (Email Forensics Collector, Live Response Triage Kit).</li>
+          <li>Supported response teams in triaging and evidence collection for early-stage threats.</li>
+          <li>Conducted forensic imaging, log correlation, and led the Lab team.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-meta">
+        <span class="timeline-date">Nov 2019 — Jan 2020</span>
+        <span class="timeline-company">KIVU Cybersecurity</span>
+      </div>
+      <div class="timeline-dot"></div>
+      <div class="timeline-body">
+        <div class="timeline-role">DFIR Senior Analyst</div>
+        <ul>
+          <li>Proactively monitored, investigated, and mitigated security incidents with a focus on ransomware and BEC.</li>
+          <li>Utilized strong technical skills and industry knowledge to handle incident response activities effectively.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-meta">
+        <span class="timeline-date">Jul 2018 — Nov 2019</span>
+        <span class="timeline-company">Redpoint Cybersecurity</span>
+      </div>
+      <div class="timeline-dot"></div>
+      <div class="timeline-body">
+        <div class="timeline-role">DFIR Senior Security Engineer</div>
+        <ul>
+          <li>Handled live intrusions and incident response cases in a customer-oriented and transparent manner.</li>
+          <li>Built and developed automation tools to assist with detection and correlation.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-meta">
+        <span class="timeline-date">2015 — 2018</span>
+        <span class="timeline-company">Various</span>
+      </div>
+      <div class="timeline-dot"></div>
+      <div class="timeline-body">
+        <div class="timeline-role">Early Career Roles</div>
+        <ul>
+          <li><strong>Technical Consultant IV</strong> — Synology (2018)</li>
+          <li><strong>Network Engineer &amp; IT Consultant</strong> — Miles Technology (2017–2018)</li>
+          <li><strong>Datacenter Technician III</strong> — Amazon Web Services (2016–2017)</li>
+          <li><strong>Computer Technician II</strong> — MicroCenter (2015–2016)</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── EDUCATION ── -->
+<section id="education">
+  <div class="section-header fade-in">
+    <div>
+      <div class="section-label">03 / Education</div>
+      <h2 class="section-title">Academic Background</h2>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="edu-grid">
+    <div class="edu-card fade-in">
+      <div class="edu-degree">B.P.S. · Bachelor of Professional Studies</div>
+      <div class="edu-title">Cybersecurity</div>
+      <div class="edu-school">George Washington University</div>
+      <div class="edu-year">2017 — 2019</div>
+    </div>
+    <div class="edu-card fade-in">
+      <div class="edu-degree">A.A.S. · Associate of Applied Science</div>
+      <div class="edu-title">Cybersecurity</div>
+      <div class="edu-school">Northern Virginia Community College</div>
+      <div class="edu-year">2013 — 2017</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CONTACT ── -->
+<section id="contact">
+  <div class="section-header fade-in">
+    <div>
+      <div class="section-label">04 / Contact</div>
+      <h2 class="section-title">Get in Touch</h2>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="contact-grid">
+    <div class="contact-left fade-in">
+      <p>
+        Whether you have a consulting opportunity, an IR engagement, a speaking invitation, 
+        or just want to connect — I'd love to hear from you.
+      </p>
+
+      <div class="contact-info" style="margin-bottom:2rem;">
+        <div class="contact-item">
+          <div class="icon">✉️</div>
+          <a href="mailto:bahramdinyarian@gmail.com">bahramdinyarian@gmail.com</a>
+        </div>
+        <div class="contact-item">
+          <div class="icon">📍</div>
+          <span>Singapore</span>
+        </div>
+      </div>
+
+      <div class="social-links">
+        <a href="https://linkedin.com/in/dinyarian" target="_blank" class="social-link">
+          🔗 LinkedIn
+        </a>
+        <a href="https://github.com/bdinyarian" target="_blank" class="social-link">
+          🐙 GitHub
+        </a>
+        <a href="mailto:bahramdinyarian@gmail.com" class="social-link">
+          ✉️ Email
+        </a>
+      </div>
+    </div>
+
+    <div class="fade-in">
+      <form class="contact-form" id="contactForm" onsubmit="handleSubmit(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fname">First Name *</label>
+            <input type="text" id="fname" name="fname" required placeholder="Jane"/>
+          </div>
+          <div class="form-group">
+            <label for="lname">Last Name *</label>
+            <input type="text" id="lname" name="lname" required placeholder="Smith"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address *</label>
+          <input type="email" id="email" name="email" required placeholder="jane@company.com"/>
+        </div>
+        <div class="form-group">
+          <label for="subject">Subject</label>
+          <select id="subject" name="subject">
+            <option value="">Select a subject…</option>
+            <option value="ir">IR Engagement / Consulting</option>
+            <option value="speaking">Speaking Opportunity</option>
+            <option value="recruitment">Recruitment / Opportunity</option>
+            <option value="collab">Collaboration</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="message">Message *</label>
+          <textarea id="message" name="message" required placeholder="Tell me about your inquiry…"></textarea>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+          <button type="submit" class="btn btn-primary" style="width:fit-content;">
+            ↗ Send Message
+          </button>
+          <div class="form-status" id="formStatus"></div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div>© 2025 Bahram Dinyarian · All Rights Reserved</div>
+  <div>
+    <a href="mailto:bahramdinyarian@gmail.com">bahramdinyarian@gmail.com</a>
+    &nbsp;·&nbsp;
+    Singapore
+  </div>
+</footer>
+
+<script>
+  // ── NAV SCROLL ──
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // ── HAMBURGER ──
+  function toggleNav() {
+    document.getElementById('navLinks').classList.toggle('open');
+  }
+  function closeNav() {
+    document.getElementById('navLinks').classList.remove('open');
+  }
+
+  // ── INTERSECTION OBSERVER ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.fade-in, .timeline-item').forEach(el => observer.observe(el));
+
+  // ── STAGGER TIMELINE ──
+  document.querySelectorAll('.timeline-item').forEach((el, i) => {
+    el.style.transitionDelay = `${i * 0.08}s`;
+  });
+
+  // ── CONTACT FORM ──
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const status = document.getElementById('formStatus');
+    const btn = e.target.querySelector('button[type="submit"]');
+    const fname = document.getElementById('fname').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const message = document.getElementById('message').value.trim();
+
+    function showStatus(type, text) {
+      status.removeAttribute('class');
+      status.removeAttribute('style');
+      status.className = 'form-status ' + type;
+      status.textContent = text;
+    }
+
+    if (!fname || !email || !message) {
+      showStatus('error', '// Please fill in all required fields.');
+      return;
+    }
+
+    // ── REPLACE THIS URL with your Formspree endpoint ──
+    const FORMSPREE_URL = 'https://formspree.io/f/xqejqvyw';
+
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+    status.className = 'form-status';
+    status.textContent = '';
+
+    try {
+      const res = await fetch(FORMSPREE_URL, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: fname + ' ' + document.getElementById('lname').value.trim(),
+          email: email,
+          subject: document.getElementById('subject').value,
+          message: message
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok || data?.ok === true) {
+        showStatus('success', '✓ Message sent! I\'ll get back to you soon.');
+        e.target.reset();
+      } else {
+        throw new Error(data?.errors?.[0]?.message || 'Server error');
+      }
+    } catch (err) {
+      showStatus('error', '// Failed to send. Email me at bahramdinyarian@gmail.com');
+    } finally {
+      btn.textContent = '↗ Send Message';
+      btn.disabled = false;
+    }
+  }
+
+  // ── SMOOTH ACTIVE NAV ──
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 120) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.style.color = a.getAttribute('href') === `#${current}` 
+        ? 'var(--accent)' : '';
+    });
+  });
+</script>
+</body>
+</html>
